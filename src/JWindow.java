@@ -24,7 +24,7 @@ public class JWindow extends JFrame
     private Dimension dim = new Dimension(808, 839); // creo la dimensione standard della finestra
     private Font font = new Font("TimesRoman", Font.PLAIN, 80);
     private Color sqColor = new Color(75, 115, 153);
-    private boolean whiteToMove = true;
+    private boolean whiteToMove = true; //TODO
 
 
     public JWindow()
@@ -125,6 +125,11 @@ public class JWindow extends JFrame
 
         // System.out.println(Arrays.deepToString(chessBoard));
 
+    }
+
+    public void getValidMoves()
+    {
+        //TODO
     }
 
 
