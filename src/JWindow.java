@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -32,7 +32,8 @@ public class JWindow extends JFrame
         setSize(dim); // setto la dimensione della finestra
         setMinimumSize(dim); // setto dimensione minima e massima per la finestra
 
-        addMouseListener(new MouseAdapter() { // riusciamo a prendere come informazione
+        addMouseListener(new MouseAdapter()
+        { // riusciamo a prendere come informazione
             // le coordinate dove il mouse va a cliccare
 
             public void mouseClicked(MouseEvent e)
@@ -66,11 +67,38 @@ public class JWindow extends JFrame
 
             }
 
+
+
         });
+
+        JButton button = new JButton("Undo");
+        if(button.getModel().isPressed())
+        {
+            System.out.println("premuto");
+        }
+
+        String a = KeyEvent.getKeyText(KeyEvent.VK_Z);
+
+        System.out.println(a);
+
+        System.out.println(KeyEvent.VK_Z); // il valore della lettera z quando viene premuta sarebbe 90? si
+
+
+
+
+
+        // keyPressed(KeyEvent.VK_Z);
+
         getContentPane().setBackground(backColor); // colora lo sfondo di un certo colore
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // chiude la finestra
         setLocationRelativeTo(null); // setta la posizione di creazione su null
         setVisible(true); // rende visibile la finestra
+    }
+
+    public void keyPressed(KeyEvent event)
+    {
+        char c = event.getKeyChar();
+        System.out.println("key pressed " + c);
     }
 
     private void drawBoard(Graphics g)
