@@ -21,10 +21,11 @@ public class JWindow extends JFrame
     private int[] sq_selected = {0, 0};
     private ArrayList<int[]> move = new ArrayList<int[]>();
     private Color backColor = new Color(234, 233, 210); // creo il colore di sfondo
-    private Dimension dim = new Dimension(808, 839); // creo la dimensione standard della finestra
+    private Dimension dim = new Dimension(807, 838); // creo la dimensione standard della finestra
     private Font font = new Font("TimesRoman", Font.PLAIN, 80);
     private Color sqColor = new Color(75, 115, 153);
     private boolean whiteToMove = true; //TODO
+    private ArrayList<Move> moves = new ArrayList<Move>();
 
 
     public JWindow()
@@ -42,6 +43,7 @@ public class JWindow extends JFrame
                 sq_selected[0] = (pos.x) / 100;
                 sq_selected[1] = (pos.y - 30) / 100;
 
+
                 move.add(Arrays.copyOf(sq_selected, sq_selected.length));
                 /*
                 per evitare bug strani tipo modifiche della casella presa in considerazione
@@ -58,7 +60,7 @@ public class JWindow extends JFrame
                 }
                 if (move.size() == 2)
                 {
-                    makeMove(move.get(0), move.get(1));
+                    makeMove(move.get(0), move.get(1), false);
 
                     move.remove(move.size() - 1);
                     move.remove(0); // non andava bene -2 perchè la dimensione
@@ -67,38 +69,32 @@ public class JWindow extends JFrame
 
             }
 
-
-
         });
 
-        JButton button = new JButton("Undo");
-        if(button.getModel().isPressed())
+        addKeyListener(new KeyAdapter()
         {
-            System.out.println("premuto");
-        }
+            public void keyTyped(KeyEvent e)
+            {
+                super.keyTyped(e);
+                //System.out.println(e.getKeyChar());
+                //stampa il bottone che abbiamo premuto
+                if (e.getKeyChar() == 'z') undoMove();
+            }
+        });
 
+        /*
         String a = KeyEvent.getKeyText(KeyEvent.VK_Z);
 
         System.out.println(a);
 
         System.out.println(KeyEvent.VK_Z); // il valore della lettera z quando viene premuta sarebbe 90? si
-
-
-
-
-
+         */
         // keyPressed(KeyEvent.VK_Z);
 
         getContentPane().setBackground(backColor); // colora lo sfondo di un certo colore
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // chiude la finestra
         setLocationRelativeTo(null); // setta la posizione di creazione su null
         setVisible(true); // rende visibile la finestra
-    }
-
-    public void keyPressed(KeyEvent event)
-    {
-        char c = event.getKeyChar();
-        System.out.println("key pressed " + c);
     }
 
     private void drawBoard(Graphics g)
@@ -138,7 +134,7 @@ public class JWindow extends JFrame
         drawPieces(g);
     }
 
-    public void makeMove(int[] start_sq, int[] finish_sq)
+    public void makeMove(int[] start_sq, int[] finish_sq, boolean isUndo)
     {
         /*
         System.out.println(start_sq[0] + "," + start_sq[1]);
@@ -147,18 +143,40 @@ public class JWindow extends JFrame
          */
 
         String mvPiece = chessBoard[start_sq[1]][start_sq[0]];
-        chessBoard[finish_sq[1]][finish_sq[0]] = mvPiece;
         chessBoard[start_sq[1]][start_sq[0]] = "---";
+        chessBoard[finish_sq[1]][finish_sq[0]] = mvPiece;
         paint(getGraphics());
+        if (!isUndo) moves.add(new Move(start_sq, finish_sq));
+        //TODO
 
         // System.out.println(Arrays.deepToString(chessBoard));
 
+    }
+
+    public void undoMove() //TODO
+                           //FIX
+    {
+        if (moves.size() != 0)
+        {
+            Move move = moves.get(moves.size() - 1);
+            String mvPiece = chessBoard[move.initialSquare[1]][move.initialSquare[0]];
+            String cpPiece = chessBoard[move.finalSquare[1]][move.finalSquare[0]];
+            moves.remove(move);
+            chessBoard[move.initialSquare[1]][move.initialSquare[0]] = cpPiece;
+            chessBoard[move.finalSquare[1]][move.finalSquare[0]] = mvPiece;
+            paint(getGraphics());
+            System.out.println(Arrays.toString(move.initialSquare) + " , " + Arrays.toString(move.finalSquare));
+            System.out.println(cpPiece + " , " + mvPiece);
+            System.out.println(Arrays.deepToString(chessBoard));
+        }
     }
 
     public void getValidMoves()
     {
         //TODO
     }
+
+    // public
 
 
     public static void main(String[] args)
