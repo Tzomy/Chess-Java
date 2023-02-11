@@ -1,13 +1,12 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class JWindow extends JFrame
 {
-    private String[][] chessBoard= {
+    private String[][] chessBoard = {
             {"B_r", "B_n", "B_b", "B_q", "B_k", "B_b", "B_n", "B_r"},
             {"B_p", "B_p", "B_p", "B_p", "B_p", "B_p", "B_p", "B_p"},
             {"---", "---", "---", "---", "---", "---", "---", "---"},
@@ -25,7 +24,7 @@ public class JWindow extends JFrame
     private Font font = new Font("TimesRoman", Font.PLAIN, 80);
     private Color sqColor = new Color(75, 115, 153);
     private boolean whiteToMove = true; //TODO
-    private ArrayList<Move> moves = new ArrayList<Move>();
+    private ArrayList<Move> moveLog = new ArrayList<Move>();
 
 
     public JWindow()
@@ -60,7 +59,11 @@ public class JWindow extends JFrame
                 }
                 if (move.size() == 2)
                 {
-                    makeMove(move.get(0), move.get(1), false);
+                    ArrayList<Move> allmvs = new ArrayList<Move>();
+                    Move move1 = new Move(move.get(0), move.get(1));
+                    allmvs = allMoves();
+                    System.out.println(allmvs + " " + allmvs.size());
+                    if (allmvs.contains(move1)) makeMove(move.get(0), move.get(1), false);
 
                     move.remove(move.size() - 1);
                     move.remove(0); // non andava bene -2 perchè la dimensione
@@ -146,8 +149,11 @@ public class JWindow extends JFrame
         chessBoard[start_sq[1]][start_sq[0]] = "---";
         chessBoard[finish_sq[1]][finish_sq[0]] = mvPiece;
         paint(getGraphics());
-        if (!isUndo) moves.add(new Move(start_sq, finish_sq));
-        //TODO
+
+        if (!isUndo) moveLog.add(new Move(start_sq, finish_sq));//TODO
+
+        whiteToMove = !whiteToMove;
+
 
         // System.out.println(Arrays.deepToString(chessBoard));
 
@@ -156,12 +162,12 @@ public class JWindow extends JFrame
     public void undoMove() //TODO
                            //FIX
     {
-        if (moves.size() != 0)
+        if (moveLog.size() != 0)
         {
-            Move move = moves.get(moves.size() - 1);
+            Move move = moveLog.get(moveLog.size() - 1);
             String mvPiece = chessBoard[move.initialSquare[1]][move.initialSquare[0]];
             String cpPiece = chessBoard[move.finalSquare[1]][move.finalSquare[0]];
-            moves.remove(move);
+            moveLog.remove(move);
             chessBoard[move.initialSquare[1]][move.initialSquare[0]] = cpPiece;
             chessBoard[move.finalSquare[1]][move.finalSquare[0]] = mvPiece;
             paint(getGraphics());
@@ -176,7 +182,228 @@ public class JWindow extends JFrame
         //TODO
     }
 
-    // public
+    public ArrayList<Move> allMoves()
+    {
+        ArrayList<Move> possibleMoves = new ArrayList<Move>();
+        for (int r = 0; r < 8; r++)
+        {
+            for (int c = 0; c < 8; c++)
+            {
+                char turn = chessBoard[r][c].charAt(0);
+                if ((turn == 'W' && whiteToMove) || (turn == 'B' && !whiteToMove))
+                {
+                    char piece = chessBoard[r][c].charAt(2);
+                    switch (piece) {
+                        case 'p' -> {
+                            getPawnMoves(r, c, possibleMoves);
+                        }
+                        case 'r' -> {
+                            getRookMoves(r, c, possibleMoves);
+                        }
+                        case 'n' -> {
+                            getKnightMoves(r, c, possibleMoves);
+                        }
+                        case 'b' -> {
+                            getBishopMoves(r, c, possibleMoves);
+                        }
+                        case 'q' -> {
+                            getQueenMoves(r, c, possibleMoves);
+                        }
+                        case 'k'-> {
+                            getKingMoves(r, c, possibleMoves);
+                        }
+                    }
+                }
+            }
+        }
+        return possibleMoves;
+    }
+
+    private void getPawnMoves(int r, int c, ArrayList<Move> possMoves)
+    {
+        if (whiteToMove)
+        {
+            if (chessBoard[r - 1][c].equals("---"))
+            {
+                possMoves.add(new Move(new int[] {r, c}, new int[] {r - 1, c}));
+                if (r == 6 && chessBoard[r - 2][c].equals("---"))
+                {
+                    possMoves.add(new Move(new int[] {r, c}, new int[] {r - 2, c}));
+                }
+            }
+            if (c - 1 >= 0)
+            {
+                if (chessBoard[r - 1][c - 1].charAt(0) == 'B')
+                {
+                    possMoves.add(new Move(new int[] {r, c}, new int[] {r - 1, c - 1}));
+                }
+            }
+            if (c + 1 <= 7)
+            {
+                if (chessBoard[r - 1][c + 1].charAt(0) == 'B')
+                {
+                    possMoves.add(new Move(new int[] {r, c}, new int[] {r - 1, c + 1}));
+                }
+            }
+        }
+        else
+        {
+            if (chessBoard[r + 1][c].equals("---"))
+            {
+                possMoves.add(new Move(new int[] {r, c}, new int[] {r + 1, c}));
+                if (r == 1 && chessBoard[r + 2][c].equals("---"))
+                {
+                    possMoves.add(new Move(new int[] {r, c}, new int[] {r + 2, c}));
+                }
+            }
+            if (c - 1 >= 0)
+            {
+                if (chessBoard[r + 1][c - 1].charAt(0) == 'W')
+                {
+                    possMoves.add(new Move(new int[] {r, c}, new int[] {r + 1, c - 1}));
+                }
+            }
+            if (c + 1 <= 7)
+            {
+                if (chessBoard[r + 1][c + 1].charAt(0) == 'W')
+                {
+                    possMoves.add(new Move(new int[] {r, c}, new int[] {r + 1, c + 1}));
+                }
+            }
+        }
+    }
+
+
+    private void getRookMoves(int r, int c, ArrayList<Move> possMoves)
+    {
+        int[][] directions = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+        char oth_color = ' ';
+        if (whiteToMove) oth_color = 'B';
+        else oth_color = 'W';
+        for (int[] d: directions)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                int endR = r + d[0] * i;
+                int endC = c + d[1] * i;
+                if (0 <= endC  && endC< 8 && 0 <= endR && endR < 8)
+                {
+                    String endPiece = chessBoard[endR][endC];
+                    if (endPiece.equals("---")) possMoves.add(new Move(new int[] {r, c}, new int[] {endR, endC}));
+                    else if (endPiece.charAt(0) == oth_color)
+                    {
+                        possMoves.add(new Move(new int[] {r, c}, new int[] {endR, endC}));
+                        break;
+                    }
+                    else break;
+                }
+                else break;
+            }
+        }
+    }
+
+    private void getBishopMoves(int r, int c, ArrayList<Move> possMoves)
+    {
+        int[][] directions = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
+        char oth_color = ' ';
+        if (whiteToMove) oth_color = 'B';
+        else oth_color = 'W';
+        for (int[] d: directions)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                int endR = r + d[0] * i;
+                int endC = c + d[1] * i;
+                if (0 <= endC  && endC< 8 && 0 <= endR && endR < 8)
+                {
+                    String endPiece = chessBoard[endR][endC];
+                    if (endPiece.equals("---")) possMoves.add(new Move(new int[] {r, c}, new int[] {endR, endC}));
+                    else if (endPiece.charAt(0) == oth_color)
+                    {
+                        possMoves.add(new Move(new int[] {r, c}, new int[] {endR, endC}));
+                        break;
+                    }
+                    else break;
+                }
+                else break;
+            }
+        }
+    }
+
+    private void getKnightMoves(int r, int c, ArrayList<Move> possMoves)
+    {
+        int[][] directions = {{2, 1}, {-2, -1}, {-2, 1}, {2, 1}, {1, 2}, {-1, -2}, {-1, -2}, {1, -2}};
+        char oth_color = ' ';
+        if (whiteToMove) oth_color = 'B';
+        else oth_color = 'W';
+        for (int[] d: directions)
+        {
+            int endR = r + d[0];
+            int endC = c + d[1];
+            if (0 <= endC  && endC< 8 && 0 <= endR && endR < 8)
+            {
+                String endPiece  = chessBoard[endR][endC];
+                if (endPiece.charAt(0) == oth_color)
+                {
+                    possMoves.add(new Move(new int[] {r, c}, new int[] {endR, endC}));
+                }
+            }
+        }
+    }
+
+    private void getQueenMoves(int r, int c, ArrayList<Move> possMoves)
+    {
+        int[][] directions = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
+        char oth_color = ' ';
+        if (whiteToMove) oth_color = 'B';
+        else oth_color = 'W';
+        for (int[] d: directions)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                int endR = r + d[0] * i;
+                int endC = c + d[1] * i;
+                if (0 <= endC  && endC< 8 && 0 <= endR && endR < 8)
+                {
+                    String endPiece = chessBoard[endR][endC];
+                    if (endPiece.equals("---")) possMoves.add(new Move(new int[] {r, c}, new int[] {endR, endC}));
+                    else if (endPiece.charAt(0) == oth_color)
+                    {
+                        possMoves.add(new Move(new int[] {r, c}, new int[] {endR, endC}));
+                        break;
+                    }
+                    else break;
+                }
+                else break;
+            }
+        }
+    }
+
+    private void getKingMoves(int r, int c, ArrayList<Move> possMoves)
+    {
+        int[][] directions = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
+        char oth_color = ' ';
+        if (whiteToMove) oth_color = 'B';
+        else oth_color = 'W';
+        for (int i = 0; i < 8; i++)
+        {
+            int endR = r + directions[i][0];
+            int endC = c + directions[i][1];
+            if (0 <= endC  && endC< 8 && 0 <= endR && endR < 8)
+            {
+                String endPiece = chessBoard[endR][endC];
+                if (endPiece.equals("---"))
+                {
+                    possMoves.add(new Move(new int[] {r, c}, new int[] {endR, endC}));
+                    if (endPiece.charAt(0) == oth_color)
+                    {
+                        possMoves.add(new Move(new int[] {r, c}, new int[] {endR, endC}));
+
+                    }
+                }
+            }
+        }
+    }
 
 
     public static void main(String[] args)
