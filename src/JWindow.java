@@ -4,6 +4,8 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+//trap
+
 public class JWindow extends JFrame
 {
     private String[][] chessBoard = {
